@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<lts>
+	<state start="1">
+		<name>1</name>
+		<transition>
+			<name>press</name>
+			<targetState>2</targetState> 
+		</transition>
+	</state>
+	<state>
+		<name>2</name>
+		<transition>
+			<name>release</name>
+			<targetState>1</targetState>
+		</transition>
+	</state>
+
+</lts>
