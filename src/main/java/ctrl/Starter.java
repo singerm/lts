@@ -19,6 +19,7 @@ public class Starter {
 			br.close();
 
 			List<Lts> allLts = Reader.read(folder, true);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

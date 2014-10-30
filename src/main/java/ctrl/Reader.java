@@ -22,8 +22,9 @@ import beans.Transition;
 
 /**
  * Liest die XML-Dateien ein und generiert LTS daraus
+ * 
  * @author Dagon
- *
+ * 
  */
 public class Reader {
 
@@ -112,6 +113,7 @@ public class Reader {
 	}
 
 	private static void createLtsFromFile(String fileName) throws Exception {
+		nameToState.clear();
 
 		File fXmlFile = new File(fileName);
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -124,7 +126,7 @@ public class Reader {
 		State startState = findStartState();
 		newLts.startState = startState;
 		addFollower(nameToState.get(startState.name));
-
+		newLts.allStates = new HashSet<State>(nameToState.values());
 		ltsList.add(newLts);
 
 	}

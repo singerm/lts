@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <lts>
 	<state start="1">
-		<name>1</name>
+		<name>0</name>
 		<transition>
 			<name>press</name>
-			<targetState>2</targetState> 
+			<targetState>1</targetState> 
 		</transition>
 	</state>
 	<state>
-		<name>2</name>
+		<name>1</name>
 		<transition>
 			<name>release</name>
-			<targetState>1</targetState>
+			<targetState>0</targetState>
 		</transition>
 	</state>
 
