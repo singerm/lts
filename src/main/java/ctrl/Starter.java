@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import beans.Lts;
+import beans.State;
 
 public class Starter {
 
@@ -19,7 +20,12 @@ public class Starter {
 			br.close();
 
 			List<Lts> allLts = Reader.read(folder, true);
+			for (Lts lts : allLts) {
 
+				for (State s : lts.getStates()) {
+					System.out.println(s.name);
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -14,6 +14,22 @@ import java.util.Set;
 public class Lts {
 
 	public State startState = null;
-	public Set<State> allStates = new HashSet<State>();
+	private Set<State> allStates = new HashSet<State>();
+
+	public Set<State> getStates() {
+		addFollowStates(startState);
+		return allStates;
+
+	}
+
+	private void addFollowStates(State s) {
+		allStates.add(s);
+
+		for (Transition trans : s.transitions) {
+			if (!allStates.contains(trans.followState)) {
+				addFollowStates(trans.followState);
+			}
+		}
+	}
 
 }

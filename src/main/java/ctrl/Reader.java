@@ -126,7 +126,6 @@ public class Reader {
 		State startState = findStartState();
 		newLts.startState = startState;
 		addFollower(nameToState.get(startState.name));
-		newLts.allStates = new HashSet<State>(nameToState.values());
 		ltsList.add(newLts);
 
 	}
