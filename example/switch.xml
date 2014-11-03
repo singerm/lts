@@ -13,6 +13,10 @@
 			<name>release</name>
 			<targetState>0</targetState>
 		</transition>
+		<transition>
+			<name>hold</name>
+			<targetState>1</targetState>
+		</transition>
 	</state>
 
 </lts>
