@@ -1,6 +1,8 @@
 package beans;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -15,6 +17,7 @@ public class Lts {
 
 	public State startState = null;
 	private Set<State> allStates = new HashSet<State>();
+	private List<Transition> allTransitions = new ArrayList<Transition>();
 
 	public Set<State> getStates() {
 		addFollowStates(startState);
@@ -30,6 +33,27 @@ public class Lts {
 				addFollowStates(trans.followState);
 			}
 		}
+	}
+
+	public List<Transition> getAllTransitions() {
+
+		addTransitionsOfFollowState(startState);
+
+		return allTransitions;
+
+	}
+
+	private void addTransitionsOfFollowState(State s) {
+
+		for (Transition trans : s.transitions) {
+
+			if (!allTransitions.contains(trans)) {
+				allTransitions.add(trans);
+				addTransitionsOfFollowState(trans.followState);
+			}
+
+		}
+
 	}
 
 }

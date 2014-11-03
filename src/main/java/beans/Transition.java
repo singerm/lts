@@ -22,4 +22,18 @@ public class Transition {
 		return this.name.hashCode();
 	}
 
+	/**
+	 * Eine Transition ist equals einer Anderen, wenn Name und Folgezustand
+	 * gleich sind!
+	 */
+	@Override
+	public boolean equals(Object o) {
+		Transition t = (Transition) o;
+		if (this.name.equals(t.name)
+				&& followState.name.equals(t.followState.name)) {
+			return true;
+		}
+		return false;
+	}
+
 }
