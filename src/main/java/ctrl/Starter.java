@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import operations.ParallelComposition;
 import beans.Lts;
 
 public class Starter {
@@ -19,6 +20,10 @@ public class Starter {
 			br.close();
 
 			List<Lts> allLts = Reader.read(folder, true);
+			ParallelComposition composition = new ParallelComposition();
+
+			Lts x = composition.compute(allLts.get(0), allLts.get(1));
+			Visualizer.visualize(x);
 
 		} catch (Exception e) {
 			e.printStackTrace();
