@@ -6,6 +6,7 @@ import operations.ParallelComposition;
 import beans.Lts;
 import beans.State;
 import beans.Transition;
+import ctrl.Visualizer;
 
 
 public class ParallelCompositionTest
@@ -24,7 +25,7 @@ public class ParallelCompositionTest
 
     Lts x = composition.compute(one, two);
 
-    showLts(x);
+    Visualizer.visualize(x);
   }
 
 

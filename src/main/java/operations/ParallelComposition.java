@@ -58,11 +58,15 @@ public class ParallelComposition
   {
     Lts targetAutomaton = new Lts();
 
+    // Clear previous stuff
+    targetStates.clear();
+    undevelopedStates.clear();
+
     // For security reasons, only allow common actions as parallels
     this.parallelActions = parallelActions;
     this.parallelActions.retainAll(buildActionIntersection(sourceAutomaton1, sourceAutomaton2));
 
-    // Cache of actions
+    // Cache
     allActions = buildActionUnion(sourceAutomaton1, sourceAutomaton2);
 
     // Build entry-point (a new state that represents the two source-automata in their initial state)
@@ -77,7 +81,7 @@ public class ParallelComposition
       if (targetAutomaton.startState == null)
         targetAutomaton.startState = rootState;
 
-      rootState.transitions.addAll(tryTransitions(root.getLeft(), root.getRight()));
+      rootState.transitions.addAll(discoverTransitions(root.getLeft(), root.getRight()));
     }
 
     return targetAutomaton;
@@ -93,7 +97,7 @@ public class ParallelComposition
    *          The second state
    * @return A set of valid transitions for the resulting merged LTS
    */
-  private Set<Transition> tryTransitions(State state1, State state2)
+  private Set<Transition> discoverTransitions(State state1, State state2)
   {
     HashSet<Transition> targetTransitions = new HashSet<Transition>();
     HashMap<String, Transition> transitions1 = new HashMap<String, Transition>();
@@ -202,7 +206,7 @@ public class ParallelComposition
       if (targetAutomaton.startState == null)
         targetAutomaton.startState = rootState;
 
-      rootState.transitions.addAll(tryTransitions(root.getLeft(), root.getRight()));
+      rootState.transitions.addAll(discoverTransitions(root.getLeft(), root.getRight()));
     }
 
     return targetAutomaton;
