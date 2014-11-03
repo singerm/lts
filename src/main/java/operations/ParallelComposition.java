@@ -21,22 +21,49 @@ public class ParallelComposition
 {
   private Queue<Tuple<State, State>> undevelopedStates = new LinkedBlockingQueue<Tuple<State, State>>();
   private Set<State> targetStates = new HashSet<State>();
+  private Set<String> parallelActions = new HashSet<String>();
+  private Set<String> allActions = new HashSet<String>();
 
   private static final String STATE_CONCAT = "#";
 
 
   /**
-   * Creates a merged automaton from two given automata using the parallel-operator (||) on the intersection of actions.
+   * Creates a merged automaton from two given automata using the parallel-operator (||) based on the intersection of common actions.
    * 
    * @param sourceAutomaton1
    *          First automaton to use
    * @param sourceAutomaton2
    *          Second automaton to use
    * @return The merged automaton
+   * @see #compute(Lts, Lts, Set)
    */
   public Lts compute(Lts sourceAutomaton1, Lts sourceAutomaton2)
   {
+    return compute(sourceAutomaton1, sourceAutomaton2, buildActionIntersection(sourceAutomaton1, sourceAutomaton2));
+  }
+
+
+  /**
+   * Creates a merged automaton from two given automata using the parallel-operator (||) based on a set of common actions.
+   * 
+   * @param sourceAutomaton1
+   *          First automaton to use
+   * @param sourceAutomaton2
+   *          Second automaton to use
+   * @param parallelActions
+   *          A set of action names that have to be executed in parallel
+   * @return The merged automaton
+   */
+  public Lts compute(Lts sourceAutomaton1, Lts sourceAutomaton2, Set<String> parallelActions)
+  {
     Lts targetAutomaton = new Lts();
+
+    // For security reasons, only allow common actions as parallels
+    this.parallelActions = parallelActions;
+    this.parallelActions.retainAll(buildActionIntersection(sourceAutomaton1, sourceAutomaton2));
+
+    // Cache of actions
+    allActions = buildActionUnion(sourceAutomaton1, sourceAutomaton2);
 
     // Build entry-point (a new state that represents the two source-automata in their initial state)
     undevelopedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
@@ -84,35 +111,35 @@ public class ParallelComposition
       transitions2.put(transition.name, transition);
     }
 
-    // The union of possible actions
-    Set<String> allActions = new HashSet<String>(transitions1.keySet());
-    allActions.addAll(transitions2.keySet());
-
     for (String action : allActions)
     {
       boolean inOne = transitions1.containsKey(action);
       boolean inTwo = transitions2.containsKey(action);
 
-      // Create and add a new Transition for the current state of the target automaton
-      Transition newTransition = new Transition();
-      newTransition.name = action;
-      targetTransitions.add(newTransition);
+      // Is a parallel action and both LTS's have it
+      if (parallelActions.contains(action))
+      {
+        if (inOne && inTwo)
+        {
+          targetTransitions.add(new Transition(action, composedState(transitions1.get(action).followState,
+              transitions2.get(action).followState)));
+        }
+      }
 
-      // Only LTS 1 develops
-      if (inOne && !inTwo)
-      {
-        newTransition.followState = composedState(transitions1.get(action).followState, state2);
-      }
-      // Only LTS 2 develops
-      else if (!inOne && inTwo)
-      {
-        newTransition.followState = composedState(state1, transitions2.get(action).followState);
-      }
-      // Both LTS's develop
+      // Is not a parallel action
       else
       {
-        newTransition.followState =
-          composedState(transitions1.get(action).followState, transitions2.get(action).followState);
+        // LTS 1 has it
+        if (inOne)
+        {
+          targetTransitions.add(new Transition(action, composedState(transitions1.get(action).followState, state2)));
+        }
+
+        // LTS 2 has it
+        if (inTwo)
+        {
+          targetTransitions.add(new Transition(action, composedState(state1, transitions2.get(action).followState)));
+        }
       }
     }
 
@@ -156,12 +183,86 @@ public class ParallelComposition
 
   public Lts computeByActions(Lts sourceAutomaton1, Lts sourceAutomaton2, Set<String> allowedActions)
   {
-    // The set of actions to parallelize is limited to a given set of actions.
-    // Transitions cannot be distinguished just by their name anymore.
+    if (allowedActions == null)
+    {
+      allowedActions = buildActionIntersection(sourceAutomaton1, sourceAutomaton2);
+    }
 
-    // TODO implementation, no priority (not part of the task?)
+    Lts targetAutomaton = new Lts();
 
-    return null;
+    // Build entry-point (a new state that represents the two source-automata in their initial state)
+    undevelopedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
+
+    while (!undevelopedStates.isEmpty())
+    {
+      Tuple<State, State> root = undevelopedStates.remove();
+      State rootState = composedState(root.getLeft(), root.getRight());
+
+      // Set first state as initial state
+      if (targetAutomaton.startState == null)
+        targetAutomaton.startState = rootState;
+
+      rootState.transitions.addAll(tryTransitions(root.getLeft(), root.getRight()));
+    }
+
+    return targetAutomaton;
   }
 
+
+  /**
+   * Builds the intersection of all actions of two automata.
+   * 
+   * @param sourceAutomaton1
+   * @param sourceAutomaton2
+   * @return A set with the common actions of both automata
+   */
+  private Set<String> buildActionIntersection(Lts sourceAutomaton1, Lts sourceAutomaton2)
+  {
+    HashSet<String> transitions1 = new HashSet<String>();
+    HashSet<String> transitions2 = new HashSet<String>();
+
+    // Transitions of lts 1
+    for (Transition transition : sourceAutomaton1.getAllTransitions())
+    {
+      transitions1.add(transition.name);
+    }
+
+    // Transitions of lts 2
+    for (Transition transition : sourceAutomaton2.getAllTransitions())
+    {
+      transitions2.add(transition.name);
+    }
+
+    // Intersection
+    transitions1.retainAll(transitions2);
+
+    return transitions1;
+  }
+
+
+  /**
+   * Builds the union of all actions of two automata.
+   * 
+   * @param sourceAutomaton1
+   * @param sourceAutomaton2
+   * @return A Set with all actions of both automata
+   */
+  private Set<String> buildActionUnion(Lts sourceAutomaton1, Lts sourceAutomaton2)
+  {
+    HashSet<String> transitions = new HashSet<String>();
+
+    // Transitions of lts 1
+    for (Transition transition : sourceAutomaton1.getAllTransitions())
+    {
+      transitions.add(transition.name);
+    }
+
+    // Transitions of lts 2
+    for (Transition transition : sourceAutomaton2.getAllTransitions())
+    {
+      transitions.add(transition.name);
+    }
+
+    return transitions;
+  }
 }
