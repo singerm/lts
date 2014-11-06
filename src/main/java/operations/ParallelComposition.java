@@ -12,17 +12,16 @@ import beans.Transition;
 
 
 /**
- * Realization of the Parallel-Execution-Operator aka ||.
+ * Implementation of the Parallel-Execution-Operator aka ||.
  * 
  * @author Sebastian
  *
  */
 public class ParallelComposition
 {
-  private Queue<Tuple<State, State>> undevelopedStates = new LinkedBlockingQueue<Tuple<State, State>>();
-  private Set<State> targetStates = new HashSet<State>();
+  private Queue<Tuple<State, State>> unvisitedStates = new LinkedBlockingQueue<Tuple<State, State>>();
+  private HashMap<String, State> existingStates = new HashMap<String, State>();
   private Set<String> parallelActions = new HashSet<String>();
-  private Set<String> allActions = new HashSet<String>();
 
   private static final String STATE_CONCAT = "#";
 
@@ -59,22 +58,20 @@ public class ParallelComposition
     Lts targetAutomaton = new Lts();
 
     // Clear previous stuff
-    targetStates.clear();
-    undevelopedStates.clear();
+    existingStates.clear();
+    unvisitedStates.clear();
 
     // For security reasons, only allow common actions as parallels
     this.parallelActions = parallelActions;
     this.parallelActions.retainAll(buildActionIntersection(sourceAutomaton1, sourceAutomaton2));
 
-    // Cache
-    allActions = buildActionUnion(sourceAutomaton1, sourceAutomaton2);
-
     // Build entry-point (a new state that represents the two source-automata in their initial state)
-    undevelopedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
+    unvisitedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
 
-    while (!undevelopedStates.isEmpty())
+    // Visit all target-states by consuming the queue
+    while (!unvisitedStates.isEmpty())
     {
-      Tuple<State, State> root = undevelopedStates.remove();
+      Tuple<State, State> root = unvisitedStates.remove();
       State rootState = composedState(root.getLeft(), root.getRight());
 
       // Set first state as initial state
@@ -95,37 +92,47 @@ public class ParallelComposition
    *          The first state
    * @param state2
    *          The second state
-   * @return A set of valid transitions for the resulting merged LTS
+   * @return A set of valid transitions for the given state-combination in the target LTS
    */
   private Set<Transition> discoverTransitions(State state1, State state2)
   {
-    HashSet<Transition> targetTransitions = new HashSet<Transition>();
-    HashMap<String, Transition> transitions1 = new HashMap<String, Transition>();
-    HashMap<String, Transition> transitions2 = new HashMap<String, Transition>();
+    // Specifying the (maximum) sizes of the sets improves performance
+    int numTransitions1 = state1.transitions.size();
+    int numTransitions2 = state2.transitions.size();
+    int maxTransitions = numTransitions1 + numTransitions2;
 
-    // Transitions of state 1
+    HashSet<Transition> newTransitions = new HashSet<Transition>(maxTransitions);
+    HashMap<String, Transition> transitions1 = new HashMap<String, Transition>(numTransitions1);
+    HashMap<String, Transition> transitions2 = new HashMap<String, Transition>(numTransitions2);
+    HashSet<String> possibleActions = new HashSet<String>(maxTransitions);
+
+    // Cache transitions of state 1
     for (Transition transition : state1.transitions)
     {
       transitions1.put(transition.name, transition);
+      possibleActions.add(transition.name);
     }
 
-    // Transitions of state 2
+    // Cache transitions of state 2
     for (Transition transition : state2.transitions)
     {
       transitions2.put(transition.name, transition);
+      possibleActions.add(transition.name);
     }
 
-    for (String action : allActions)
+    // Check all the actions that could possibly be available from this state
+    for (String action : possibleActions)
     {
       boolean inOne = transitions1.containsKey(action);
       boolean inTwo = transitions2.containsKey(action);
 
-      // Is a parallel action and both LTS's have it
+      // Is a parallel action
       if (parallelActions.contains(action))
       {
+        // Both LTS's have the action
         if (inOne && inTwo)
         {
-          targetTransitions.add(new Transition(action, composedState(transitions1.get(action).followState,
+          newTransitions.add(new Transition(action, composedState(transitions1.get(action).followState,
               transitions2.get(action).followState)));
         }
       }
@@ -136,24 +143,23 @@ public class ParallelComposition
         // LTS 1 has it
         if (inOne)
         {
-          targetTransitions.add(new Transition(action, composedState(transitions1.get(action).followState, state2)));
+          newTransitions.add(new Transition(action, composedState(transitions1.get(action).followState, state2)));
         }
 
         // LTS 2 has it
         if (inTwo)
         {
-          targetTransitions.add(new Transition(action, composedState(state1, transitions2.get(action).followState)));
+          newTransitions.add(new Transition(action, composedState(state1, transitions2.get(action).followState)));
         }
       }
     }
 
-    return targetTransitions;
+    return newTransitions;
   }
 
 
   /**
-   * Creates a new state for the target automaton using the information of two single source automata. If the corresponding state has
-   * already been created, the previously created state is returned instead.
+   * Creates a new state for the target automaton or returns an existing state that is associated with the given state-combination.
    * 
    * @param state1
    *          First state to merge
@@ -163,28 +169,27 @@ public class ParallelComposition
    */
   private State composedState(State state1, State state2)
   {
-    // What the new state *would* be
-    State composedState = new State(state1.name + STATE_CONCAT + state2.name);
+    // The name of the new state (a state is identified by its name)
+    String stateName = state1.name + STATE_CONCAT + state2.name;
 
-    // Search for an existing state and return it, if one
-    for (State targetState : targetStates)
+    // If we already have such state just return it
+    if (existingStates.containsKey(stateName))
     {
-      if (targetState.equals(composedState))
-      {
-        return targetState;
-      }
+      return existingStates.get(stateName);
     }
 
-    // Add new state to keep track of existing states
-    targetStates.add(composedState);
+    // Otherwise add new state to keep track of existing states
+    State state = new State(stateName);
+    existingStates.put(stateName, state);
 
     // Also add the newly created state to the queue of undeveloped states
-    undevelopedStates.add(new Tuple<State, State>(state1, state2));
+    unvisitedStates.add(new Tuple<State, State>(state1, state2));
 
-    return composedState;
+    return state;
   }
 
 
+  @Deprecated
   public Lts computeByActions(Lts sourceAutomaton1, Lts sourceAutomaton2, Set<String> allowedActions)
   {
     if (allowedActions == null)
@@ -195,11 +200,11 @@ public class ParallelComposition
     Lts targetAutomaton = new Lts();
 
     // Build entry-point (a new state that represents the two source-automata in their initial state)
-    undevelopedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
+    unvisitedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
 
-    while (!undevelopedStates.isEmpty())
+    while (!unvisitedStates.isEmpty())
     {
-      Tuple<State, State> root = undevelopedStates.remove();
+      Tuple<State, State> root = unvisitedStates.remove();
       State rootState = composedState(root.getLeft(), root.getRight());
 
       // Set first state as initial state

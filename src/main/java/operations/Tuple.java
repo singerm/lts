@@ -1,5 +1,15 @@
 package operations;
 
+/**
+ * Helper-class that may holds two objects of different type.
+ * 
+ * @author Sebastian
+ *
+ * @param <L>
+ *          Type of the 'left' object
+ * @param <R>
+ *          Type of the 'right' object
+ */
 public class Tuple<L, R>
 {
   private L left = null;
