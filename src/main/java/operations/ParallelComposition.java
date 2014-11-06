@@ -2,6 +2,8 @@ package operations;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -24,6 +26,38 @@ public class ParallelComposition
   private Set<String> parallelActions = new HashSet<String>();
 
   private static final String STATE_CONCAT = "#";
+
+
+  /**
+   * Creates a merged automaton using a list of source automata. The automata are merged successively using the set of parallel actions.
+   * 
+   * @param sourceAutomata
+   *          A list of source automata. Declared as list to maintain the input-order
+   * @param parallelActions
+   *          A set of actions to interleave
+   * @return A merged automaton as defined by the parallel-composition operator (||). The input-list has to contain at least one automaton
+   */
+  public Lts compute(List<Lts> sourceAutomata, Set<String> parallelActions)
+  {
+    if (sourceAutomata.size() == 0)
+    {
+      // We cannot work without an automaton
+      throw new IllegalArgumentException("Collection 'sourceAutomata' is empty!");
+    }
+
+    Iterator<Lts> sourceAutomatonIterator = sourceAutomata.iterator();
+
+    // If there is just one LTS in the list, this automaton is equal to the target automaton by convention
+    Lts targetAutomaton = sourceAutomatonIterator.next();
+
+    while (sourceAutomatonIterator.hasNext())
+    {
+      // The existing target automaton and the other automata in the collection get merged successively
+      targetAutomaton = compute(targetAutomaton, sourceAutomatonIterator.next(), parallelActions);
+    }
+
+    return targetAutomaton;
+  }
 
 
   /**
@@ -50,7 +84,7 @@ public class ParallelComposition
    * @param sourceAutomaton2
    *          Second automaton to use
    * @param parallelActions
-   *          A set of action names that have to be executed in parallel
+   *          A set of actions to interleave
    * @return The merged automaton
    */
   public Lts compute(Lts sourceAutomaton1, Lts sourceAutomaton2, Set<String> parallelActions)
@@ -58,12 +92,9 @@ public class ParallelComposition
     Lts targetAutomaton = new Lts();
 
     // Clear previous stuff
+    this.parallelActions = parallelActions;
     existingStates.clear();
     unvisitedStates.clear();
-
-    // For security reasons, only allow common actions as parallels
-    this.parallelActions = parallelActions;
-    this.parallelActions.retainAll(buildActionIntersection(sourceAutomaton1, sourceAutomaton2));
 
     // Build entry-point (a new state that represents the two source-automata in their initial state)
     unvisitedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
@@ -186,35 +217,6 @@ public class ParallelComposition
     unvisitedStates.add(new Tuple<State, State>(state1, state2));
 
     return state;
-  }
-
-
-  @Deprecated
-  public Lts computeByActions(Lts sourceAutomaton1, Lts sourceAutomaton2, Set<String> allowedActions)
-  {
-    if (allowedActions == null)
-    {
-      allowedActions = buildActionIntersection(sourceAutomaton1, sourceAutomaton2);
-    }
-
-    Lts targetAutomaton = new Lts();
-
-    // Build entry-point (a new state that represents the two source-automata in their initial state)
-    unvisitedStates.add(new Tuple<State, State>(sourceAutomaton1.startState, sourceAutomaton2.startState));
-
-    while (!unvisitedStates.isEmpty())
-    {
-      Tuple<State, State> root = unvisitedStates.remove();
-      State rootState = composedState(root.getLeft(), root.getRight());
-
-      // Set first state as initial state
-      if (targetAutomaton.startState == null)
-        targetAutomaton.startState = rootState;
-
-      rootState.transitions.addAll(discoverTransitions(root.getLeft(), root.getRight()));
-    }
-
-    return targetAutomaton;
   }
 
 
