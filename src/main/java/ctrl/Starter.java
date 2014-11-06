@@ -23,6 +23,7 @@ public class Starter {
 			ParallelComposition composition = new ParallelComposition();
 
 			Lts x = composition.compute(allLts.get(0), allLts.get(1));
+
 			Visualizer.visualize(x);
 
 		} catch (Exception e) {
