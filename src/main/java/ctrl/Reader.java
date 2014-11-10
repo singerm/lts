@@ -45,20 +45,17 @@ public class Reader {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<Lts> read(String folder, boolean printAfterReading)
+	public static List<Lts> read(File folder, boolean printAfterReading)
 			throws Exception {
-		String directory = System.getProperty("user.dir");
 
-		File dir = new File(directory + "\\" + folder);
+		if (folder.isDirectory()) {
 
-		if (dir.isDirectory()) {
-
-			for (File file : dir.listFiles()) {
+			for (File file : folder.listFiles()) {
 
 				String fileName = file.getName();
 
 				if (fileName.endsWith(".xml")) {
-					createLtsFromFile(dir + "\\" + fileName);
+					createLtsFromFile(folder + "\\" + fileName);
 					if (printAfterReading) {
 						printLts();
 
@@ -148,10 +145,15 @@ public class Reader {
 					newTransition.name = currTransition
 							.getElementsByTagName("name").item(0)
 							.getTextContent();
+
 					transitions.add(newTransition);
 					String targetStateName = currTransition
 							.getElementsByTagName("targetState").item(0)
 							.getTextContent();
+
+					System.out.println("Füge " + targetStateName + " zu "
+							+ s.name + "hinzu über Transition "
+							+ newTransition.name);
 					newTransition.followState = nameToState
 							.get(targetStateName);
 					if (!openStates.contains(nameToState.get(targetStateName))) {

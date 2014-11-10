@@ -1,6 +1,9 @@
 package ctrl;
 
-import java.io.PrintWriter;
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.SingleGraph;
 
 import beans.Lts;
 import beans.State;
@@ -8,35 +11,35 @@ import beans.Transition;
 
 public class Visualizer {
 
+	protected static String styleSheet = "node {"
+			+ "  size:20px;     fill-color: black;" + "}" + "node.marked {"
+			+ "       fill-color: red;" + "}";
+
 	public static void visualize(Lts lts) {
-		try {
-			PrintWriter writer = new PrintWriter("out.gv", "UTF-8");
-			writer.println("digraph G {");
 
-			for (State state : lts.getStates()) {
-				String graphName = state.name.replace("#", "");
-				if (lts.startState.equals(state)) {
-					writer.println(graphName + " [label=\"" + state.name
-							+ "\" style=\"filled\" fillcolor=\"red\"]");
-				}
-
-				else {
-					writer.println(graphName + " [label=\"" + state.name
-							+ "\"]");
-				}
-
-				for (Transition transition : state.transitions) {
-					String followName = transition.followState.name.replace(
-							"#", "");
-					writer.println(graphName + " ->" + followName + "[label=\""
-							+ transition.name + "\"]");
-				}
+		Graph graph = new SingleGraph("Compose LTS");
+		graph.setStrict(false);
+		for (State state : lts.getStates()) {
+			Node n = graph.addNode(state.name);
+			n.addAttribute("ui.label", state.name);
+			if (lts.startState.equals(state)) {
+				n.setAttribute("ui.class", "marked");
 			}
-			writer.println("}");
-			writer.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+
 		}
+
+		for (State state : lts.getStates()) {
+
+			for (Transition trans : state.transitions) {
+
+				Edge e = graph.addEdge(trans.name + state.name, state.name,
+						trans.followState.name, true);
+				e.addAttribute("ui.label", trans.name);
+
+			}
+		}
+		graph.addAttribute("ui.stylesheet", styleSheet);
+		graph.display();
 
 	}
 }
