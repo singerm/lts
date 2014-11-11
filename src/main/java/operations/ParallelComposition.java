@@ -29,20 +29,53 @@ public class ParallelComposition
 
 
   /**
-   * Creates a merged automaton using a list of source automata. The automata are merged successively using the set of parallel actions.
+   * Creates a merged automaton using a list of source automata. The automata are merged successively using the set of common actions as
+   * parallel actions.<br />
+   * <b>The input-list has to contain at least one automaton.</b>
+   * 
+   * @param sourceAutomata
+   *          A list of source automata. Declared as list to maintain the input-order
+   * @return A merged automaton as defined by the parallel-composition operator (||)
+   */
+  public Lts compute(List<Lts> sourceAutomata)
+  {
+    if (sourceAutomata.size() == 0)
+    {
+      // We cannot work without an automaton
+      throw new IllegalArgumentException("List 'sourceAutomata' is empty!");
+    }
+
+    Iterator<Lts> sourceAutomatonIterator = sourceAutomata.iterator();
+
+    // Initially fill the action-set using the actions of the first automaton
+    Set<String> parallelActions = getAutomatonsActions(sourceAutomatonIterator.next());
+
+    // Build intersection of actions using all other automata in the input list
+    while (sourceAutomatonIterator.hasNext())
+    {
+      parallelActions.retainAll(getAutomatonsActions(sourceAutomatonIterator.next()));
+    }
+
+    return compute(sourceAutomata, parallelActions);
+  }
+
+
+  /**
+   * Creates a merged automaton using a list of source automata. The automata are merged successively using the set of parallel actions.<br />
+   * <b>The input-list has to contain at least one automaton.</b>
    * 
    * @param sourceAutomata
    *          A list of source automata. Declared as list to maintain the input-order
    * @param parallelActions
    *          A set of actions to interleave
-   * @return A merged automaton as defined by the parallel-composition operator (||). The input-list has to contain at least one automaton
+   * @return A merged automaton as defined by the parallel-composition operator (||).
    */
   public Lts compute(List<Lts> sourceAutomata, Set<String> parallelActions)
   {
     if (sourceAutomata.size() == 0)
     {
       // We cannot work without an automaton
-      throw new IllegalArgumentException("Collection 'sourceAutomata' is empty!");
+      throw new IllegalArgumentException("List 'sourceAutomata' is empty!");
     }
 
     Iterator<Lts> sourceAutomatonIterator = sourceAutomata.iterator();
@@ -221,28 +254,36 @@ public class ParallelComposition
 
 
   /**
+   * Determines the set of actions assigned with an Lts automaton.
+   * 
+   * @param automaton
+   * @return A set of action-names
+   */
+  private static Set<String> getAutomatonsActions(Lts automaton)
+  {
+    List<Transition> transitions = automaton.getAllTransitions();
+    Set<String> actions = new HashSet<String>(transitions.size());
+
+    for (Transition transition : transitions)
+    {
+      actions.add(transition.name);
+    }
+
+    return actions;
+  }
+
+
+  /**
    * Builds the intersection of all actions of two automata.
    * 
    * @param sourceAutomaton1
    * @param sourceAutomaton2
    * @return A set with the common actions of both automata
    */
-  private Set<String> buildActionIntersection(Lts sourceAutomaton1, Lts sourceAutomaton2)
+  private static Set<String> buildActionIntersection(Lts sourceAutomaton1, Lts sourceAutomaton2)
   {
-    HashSet<String> transitions1 = new HashSet<String>();
-    HashSet<String> transitions2 = new HashSet<String>();
-
-    // Transitions of lts 1
-    for (Transition transition : sourceAutomaton1.getAllTransitions())
-    {
-      transitions1.add(transition.name);
-    }
-
-    // Transitions of lts 2
-    for (Transition transition : sourceAutomaton2.getAllTransitions())
-    {
-      transitions2.add(transition.name);
-    }
+    Set<String> transitions1 = getAutomatonsActions(sourceAutomaton1);
+    Set<String> transitions2 = getAutomatonsActions(sourceAutomaton1);
 
     // Intersection
     transitions1.retainAll(transitions2);
@@ -258,7 +299,7 @@ public class ParallelComposition
    * @param sourceAutomaton2
    * @return A Set with all actions of both automata
    */
-  private Set<String> buildActionUnion(Lts sourceAutomaton1, Lts sourceAutomaton2)
+  private static Set<String> buildActionUnion(Lts sourceAutomaton1, Lts sourceAutomaton2)
   {
     HashSet<String> transitions = new HashSet<String>();
 
