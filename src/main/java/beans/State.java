@@ -15,6 +15,7 @@ import java.util.Set;
 public class State {
 
 	public String name = "";
+	public Set<Proposition> props = new HashSet<Proposition>();
 
 	// In diesem Fall wird ein Set genutzt, da dies sicherstellt, da jeder
 	// Transition-Name nur einmal verwendet wird.

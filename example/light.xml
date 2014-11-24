@@ -6,6 +6,12 @@
 			<name>press</name>
 			<targetState>1</targetState> 
 		</transition>
+		<proposition>
+			<name>a</name>
+		</proposition>
+		<proposition>
+			<name>b</name>
+		</proposition>		
 	</state>
 	<state>
 		<name>1</name>
@@ -17,6 +23,9 @@
 			<name>hold</name>
 			<targetState>2</targetState>
 		</transition>
+		<proposition>
+			<name>a</name>
+		</proposition>		
 	</state>
 	<state>
 		<name>2</name>
@@ -24,5 +33,8 @@
 			<name>press</name>
 			<targetState>0</targetState>
 		</transition>
+		<proposition>
+			<name>b</name>
+		</proposition>		
 	</state>
 </lts>

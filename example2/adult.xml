@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<lts>
+	<state start="1">
+		<name>0</name>
+		<transition>
+			<name>work</name>
+			<targetState>1</targetState> 
+		</transition>
+	</state>
+	<state>
+		<name>1</name>
+		 <transition>
+		 	<name>eat</name>
+		 	<targetState>2</targetState>
+		 </transition>
+	</state>
+	<state>
+		<name>2</name>
+	</state>
+
+</lts>

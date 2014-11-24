@@ -17,6 +17,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import beans.Lts;
+import beans.Proposition;
 import beans.State;
 import beans.Transition;
 
@@ -162,6 +163,30 @@ public class Reader {
 				}
 			}
 			s.transitions = transitions;
+
+			NodeList propositionList = currState
+					.getElementsByTagName("proposition");
+			Set<Proposition> propositions = new HashSet<Proposition>();
+
+			for (int temp = 0; temp < propositionList.getLength(); temp++) {
+
+				Node propositionNode = propositionList.item(temp);
+
+				if (propositionNode.getNodeType() == Node.ELEMENT_NODE) {
+					Proposition newProposition = new Proposition();
+					Element currProposition = (Element) propositionNode;
+					newProposition.name = currProposition
+							.getElementsByTagName("name").item(0)
+							.getTextContent();
+
+					propositions.add(newProposition);
+
+				}
+
+			}
+
+			s.props = propositions;
+
 			openStates.remove(s);
 
 		}
