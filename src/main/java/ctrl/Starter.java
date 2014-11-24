@@ -13,6 +13,8 @@ public class Starter {
 
 	public static void main(String[] args) {
 		try {
+			System.setProperty("org.graphstream.ui.renderer",
+					"org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 			File folder = null;
 			// JFileChooser-Objekt erstellen
 			JFileChooser chooser = new JFileChooser();
