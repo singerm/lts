@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
 import operations.ParallelComposition;
 import beans.Lts;
@@ -32,6 +33,15 @@ public class Starter {
 
 				Lts x = composition.compute(allLts);
 				Visualizer.visualize(x);
+
+				JFrame frame = new JFrame("CTL Formula");
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+				frame.add(new CTLPanel());
+				frame.setLocationRelativeTo(null);
+				frame.pack();
+				frame.setVisible(true);
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
