@@ -1,0 +1,1 @@
+Implementation der Operation ist unter src\main\java\operations\ParallelComposition.java zu finden
