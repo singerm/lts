@@ -43,10 +43,14 @@ public class CTLPanel extends JPanel implements ActionListener {
 		CtlFormula root = InputParser.parseInput(textField.getText());
 
 		root.reduce(lts);
+		if (!lts.startState.formulas.isEmpty()) {
+			JOptionPane.showMessageDialog(this, "CTL is valid");
+		}
 
-		JOptionPane.showMessageDialog(this, "CTL is invalid", "Invalid",
-				JOptionPane.ERROR_MESSAGE);
-
+		else {
+			JOptionPane.showMessageDialog(this, "CTL is invalid", "Invalid",
+					JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 }
