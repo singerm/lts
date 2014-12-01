@@ -4,6 +4,13 @@ public class Proposition {
 
 	public String name = "";
 
+	public Proposition(String name) {
+		this.name = name;
+	}
+
+	public Proposition() {
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

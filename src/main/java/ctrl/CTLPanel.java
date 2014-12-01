@@ -10,11 +10,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import util.InputParser;
+import beans.Lts;
+import beans.ctl.CtlFormula;
+
 public class CTLPanel extends JPanel implements ActionListener {
 	private JTextField textField = null;
+	private Lts lts = null;
 
-	public CTLPanel() {
+	public CTLPanel(Lts lts) {
 		super(new GridBagLayout());
+		this.lts = lts;
 		textField = new JTextField(20);
 
 		// Add Components to this panel.
@@ -33,6 +39,11 @@ public class CTLPanel extends JPanel implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+
+		CtlFormula root = InputParser.parseInput(textField.getText());
+
+		root.reduce(lts);
+
 		JOptionPane.showMessageDialog(this, "CTL is invalid", "Invalid",
 				JOptionPane.ERROR_MESSAGE);
 

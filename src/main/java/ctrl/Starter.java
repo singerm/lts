@@ -39,7 +39,7 @@ public class Starter {
 				JFrame frame = new JFrame("CTL Formula");
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-				frame.add(new CTLPanel());
+				frame.add(new CTLPanel(x));
 				frame.setLocationRelativeTo(null);
 				frame.pack();
 				frame.setVisible(true);
