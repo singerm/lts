@@ -25,12 +25,22 @@ public class ExOperator
 
     Set<State> states = automaton.getCachedStates();
 
-    for (State s : states)
+    for (State phiCandidate : states)
     {
-      if (s.formulas.contains(phi))
+      if (phiCandidate.formulas.contains(phi))
       {
-        // TODO Hole die rückwärtstransitionen und markiere ihre eingänge
+        // All direct predecessors of phi-satisfying states satisfy the EU-operator
+        mark(phiCandidate.prevStates);
       }
+    }
+  }
+
+
+  private void mark(Set<State> states)
+  {
+    for (State state : states)
+    {
+      state.formulas.add(this);
     }
   }
 

@@ -1,5 +1,6 @@
 package operations;
 
+import util.LtsHelper;
 import beans.Lts;
 import beans.ctl.CtlFormula;
 
@@ -8,6 +9,9 @@ public class CtlChecker
 {
   public static boolean satisfies(Lts automaton, CtlFormula formula)
   {
+    // Update the backlink-cache of the automaton
+    LtsHelper.setPreviouseStates(automaton);
+
     // Evaluation of the automaton against the formula
     formula.reduce(automaton);
 
