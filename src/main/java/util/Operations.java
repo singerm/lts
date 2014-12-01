@@ -9,4 +9,8 @@ public enum Operations {
 	private Operations(String expression) {
 		this.expression = expression;
 	}
+
+	public String getExpression() {
+		return this.expression;
+	}
 }

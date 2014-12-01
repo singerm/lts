@@ -19,7 +19,7 @@ public class State {
 	public String name = "";
 	public Set<Proposition> props = new HashSet<Proposition>();
 	public Set<CtlFormula> formulas = new HashSet<CtlFormula>();
-	public Integer deapthIndex = null;
+	public Integer depthIndex = null;
 	public int lowlink = 0;
 	public Set<State> prevStates = new HashSet<State>();
 

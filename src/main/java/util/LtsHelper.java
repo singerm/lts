@@ -36,7 +36,7 @@ public class LtsHelper {
 		allScc.clear();
 		stack.clear();
 		for (State s : input) {
-			if (s.deapthIndex == null) {
+			if (s.depthIndex == null) {
 				strongConnected(s);
 			}
 		}
@@ -45,25 +45,25 @@ public class LtsHelper {
 	}
 
 	private static void strongConnected(State s) {
-		s.deapthIndex = depathIndex;
+		s.depthIndex = depathIndex;
 		s.lowlink = depathIndex;
 		depathIndex++;
 		stack.push(s);
 
 		for (Transition trans : s.transitions) {
 
-			if (trans.followState.deapthIndex == null) {
+			if (trans.followState.depthIndex == null) {
 				strongConnected(trans.followState);
 				s.lowlink = Math.min(s.lowlink, trans.followState.lowlink);
 
 			}
 
 			else if (stack.contains(trans.followState)) {
-				s.lowlink = Math.min(s.lowlink, trans.followState.deapthIndex);
+				s.lowlink = Math.min(s.lowlink, trans.followState.depthIndex);
 			}
 		}
 
-		if (s.lowlink == s.deapthIndex) {
+		if (s.lowlink == s.depthIndex) {
 			Set<State> scc = new HashSet<State>();
 			State w = null;
 			do {
