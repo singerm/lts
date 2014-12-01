@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import beans.Lts;
+import beans.Proposition;
 import beans.State;
 import beans.Transition;
 
@@ -245,6 +246,10 @@ public class ParallelComposition
     // Otherwise add new state to keep track of existing states
     State state = new State(stateName);
     existingStates.put(stateName, state);
+
+    // Build set of propositions using the _union_ of propositions (task description)
+    state.props = new HashSet<Proposition>(state1.props);
+    state.props.addAll(state2.props);
 
     // Also add the newly created state to the queue of undeveloped states
     unvisitedStates.add(new Tuple<State, State>(state1, state2));
