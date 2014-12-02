@@ -19,14 +19,12 @@ public class InputParser {
 	}
 
 	private static CtlFormula appendFormula(String input) {
-		System.out.println("Input: " + input);
 		input = input.trim();
 
 		if (input.indexOf("(") < 0 && input.indexOf(")") < 0
 				&& !input.contains(Operations.AND.getExpression())
 				&& !input.contains(Operations.OR.getExpression())
 				&& !input.contains(Operations.EU.getExpression())) {
-			System.out.println("Setze Atomic proposition " + input);
 			return new PropositionOccurrence(new Proposition(input));
 		}
 
@@ -36,11 +34,9 @@ public class InputParser {
 
 			String operation = input.substring(0, start).trim().toUpperCase();
 
-			System.out.println("Operation: " + operation);
 			// uniäre operatoren behandeln
 
 			if (operation.equals(Operations.EX.getExpression())) {
-				System.out.println(start + 1);
 				CtlFormula phi = appendFormula(input.substring(start + 1, end));
 				return new ExOperator(phi);
 			}
@@ -96,7 +92,6 @@ public class InputParser {
 						.contains(Operations.EU.getExpression()))
 						|| (operation.length() > 0 && operation
 								.contains(Operations.EU.getExpression()))) {
-					System.out.println("EU");
 					input = replaceLast(input.replaceFirst("\\[", ""), "]", "")
 							.trim();
 					// TODO find the right delemiter
