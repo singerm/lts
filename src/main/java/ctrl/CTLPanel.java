@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import operations.CtlChecker;
 import util.InputParser;
 import beans.Lts;
 import beans.ctl.CtlFormula;
@@ -42,8 +43,7 @@ public class CTLPanel extends JPanel implements ActionListener {
 
 		CtlFormula root = InputParser.parseInput(textField.getText());
 
-		root.reduce(lts);
-		if (!lts.startState.formulas.isEmpty()) {
+		if (CtlChecker.satisfies(lts, root)) {
 			JOptionPane.showMessageDialog(this, "CTL is valid");
 		}
 
