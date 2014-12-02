@@ -8,70 +8,90 @@ import beans.Lts;
 import beans.State;
 import beans.Transition;
 
-public class LtsHelper {
 
-	private static Stack<State> stack = new Stack<State>();
-	private static int depathIndex = 0;
-	private static Set<Set<State>> allScc = new HashSet<Set<State>>();
+public class LtsHelper
+{
 
-	public static void setPreviouseStates(Lts lts) {
-		for (State s : lts.getStates()) {
+  private static Stack<State> stack = new Stack<State>();
+  private static int depathIndex = 0;
+  private static Set<Set<State>> allScc = new HashSet<Set<State>>();
 
-			for (Transition trans : s.transitions) {
 
-				trans.followState.prevStates.add(s);
+  public static void setPreviouseStates(Lts lts)
+  {
+    for (State s : lts.getStates())
+    {
 
-			}
+      for (Transition trans : s.transitions)
+      {
 
-		}
+        trans.followState.prevStates.add(s);
 
-	}
+      }
 
-	public static Set<Set<State>> getSCC(Lts lts) {
-		return getSCC(lts.getCachedStates());
-	}
+    }
 
-	public static Set<Set<State>> getSCC(Set<State> input) {
-		depathIndex = 0;
-		allScc.clear();
-		stack.clear();
-		for (State s : input) {
-			if (s.depthIndex == null) {
-				strongConnected(s);
-			}
-		}
+  }
 
-		return allScc;
-	}
 
-	private static void strongConnected(State s) {
-		s.depthIndex = depathIndex;
-		s.lowlink = depathIndex;
-		depathIndex++;
-		stack.push(s);
+  public static Set<Set<State>> getSCC(Lts lts)
+  {
+    return getSCC(lts.getCachedStates());
+  }
 
-		for (Transition trans : s.transitions) {
 
-			if (trans.followState.depthIndex == null) {
-				strongConnected(trans.followState);
-				s.lowlink = Math.min(s.lowlink, trans.followState.lowlink);
+  public static Set<Set<State>> getSCC(Set<State> input)
+  {
+    depathIndex = 0;
+    allScc.clear();
+    stack.clear();
+    for (State s : input)
+    {
+      if (s.depthIndex == null)
+      {
+        strongConnected(s);
+      }
+    }
 
-			}
+    return allScc;
+  }
 
-			else if (stack.contains(trans.followState)) {
-				s.lowlink = Math.min(s.lowlink, trans.followState.depthIndex);
-			}
-		}
 
-		if (s.lowlink == s.depthIndex) {
-			Set<State> scc = new HashSet<State>();
-			State w = null;
-			do {
-				w = stack.pop();
-				scc.add(w);
-			} while (s.equals(w));
-			allScc.add(scc);
-		}
+  private static void strongConnected(State s)
+  {
+    s.depthIndex = depathIndex;
+    s.lowlink = depathIndex;
+    depathIndex++;
+    stack.push(s);
 
-	}
+    for (Transition trans : s.transitions)
+    {
+
+      if (trans.followState.depthIndex == null)
+      {
+        strongConnected(trans.followState);
+        s.lowlink = Math.min(s.lowlink, trans.followState.lowlink);
+
+      }
+
+      else if (stack.contains(trans.followState))
+      {
+        s.lowlink = Math.min(s.lowlink, trans.followState.depthIndex);
+      }
+    }
+
+    if (s.lowlink == s.depthIndex)
+    {
+      Set<State> scc = new HashSet<State>();
+      State w = null;
+      do
+      {
+        w = stack.pop();
+        scc.add(w);
+      }
+      while (!s.equals(w));
+      allScc.add(scc);
+    }
+
+  }
 }

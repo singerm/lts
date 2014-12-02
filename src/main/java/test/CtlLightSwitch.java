@@ -5,10 +5,12 @@ import beans.Lts;
 import beans.Proposition;
 import beans.State;
 import beans.Transition;
+import beans.ctl.AfOperator;
 import beans.ctl.AgOperator;
 import beans.ctl.CtlFormula;
 import beans.ctl.EfOperator;
 import beans.ctl.EgOperator;
+import beans.ctl.ImplicationOperator;
 import beans.ctl.NegationOperator;
 import beans.ctl.PropositionOccurrence;
 
@@ -23,13 +25,17 @@ public class CtlLightSwitch
   {
     Lts automaton = createLightSwitch();
 
+    // Lts automaton = createSimple();
+    // CtlFormula ctl = createEgLightOn();
+
     // Working
     // CtlFormula ctl = createEfLightOn();
-    CtlFormula ctl = createAgEfNotLightOn();
+    // CtlFormula ctl = createAgEfNotLightOn();
+    // CtlFormula ctl = createAgHighBattFollowsEfNotHighBatt();
 
     // Not working
-    // CtlFormula ctl = createEgHighBattUse();
-    // CtlFormula ctl = createAgAfNotLightOn();
+    // CtlFormula ctl = createEgNotHighBattUse();
+    CtlFormula ctl = createAgAfNotLightOn();
 
     boolean satisfaction = CtlChecker.satisfies(automaton, ctl);
 
@@ -37,6 +43,29 @@ public class CtlLightSwitch
       System.out.println("Yes");
     else
       System.out.println("No");
+  }
+
+
+  public static Lts createSimple()
+  {
+    Lts automaton = new Lts();
+
+    State a = new State("a");
+    State b = new State("b");
+    a.props.add(lightOn);
+    b.props.add(lightOn);
+
+    Transition x = new Transition();
+    a.transitions.add(x);
+    x.followState = b;
+
+    Transition y = new Transition();
+    b.transitions.add(y);
+    y.followState = a;
+
+    automaton.startState = a;
+
+    return automaton;
   }
 
 
@@ -85,6 +114,10 @@ public class CtlLightSwitch
     hold.followState = prhigh;
     prlow.transitions.add(hold);
 
+    Transition hold2 = new Transition();
+    hold2.followState = prlow;
+    prhigh.transitions.add(hold2);
+
     automaton.startState = reloff;
 
     return automaton;
@@ -99,7 +132,7 @@ public class CtlLightSwitch
   }
 
 
-  public static CtlFormula createEgHighBattUse()
+  public static CtlFormula createEgNotHighBattUse()
   {
     // FIXME EG-operator
     PropositionOccurrence battUseOcc = new PropositionOccurrence(highBattUse);
@@ -120,7 +153,28 @@ public class CtlLightSwitch
 
   public static CtlFormula createAgAfNotLightOn()
   {
-    // TODO braucht EG
-    return null;
+    // FIXME EG-operator???
+    PropositionOccurrence lightOnOcc = new PropositionOccurrence(lightOn);
+
+    return new AgOperator(new AfOperator(new NegationOperator(lightOnOcc)));
+  }
+
+
+  public static CtlFormula createAgHighBattFollowsEfNotHighBatt()
+  {
+    PropositionOccurrence battUseOcc = new PropositionOccurrence(highBattUse);
+
+    CtlFormula agBatt = new AgOperator(battUseOcc);
+    CtlFormula efNotBatt = new EfOperator(new NegationOperator(battUseOcc));
+
+    return new ImplicationOperator(agBatt, efNotBatt);
+  }
+
+
+  public static CtlFormula createEgLightOn()
+  {
+    PropositionOccurrence lightOnOcc = new PropositionOccurrence(lightOn);
+
+    return new EgOperator(lightOnOcc);
   }
 }
